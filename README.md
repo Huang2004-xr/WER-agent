@@ -31,3 +31,5 @@ packages/
 ## 开发约定
 
 Git 提交信息统一使用 `类型:中文描述` 格式，例如 `feat:增加策划需求解析`。完整规则见 [`CONTRIBUTING.md`](./CONTRIBUTING.md)。
+
+所有开发约束见 [`AGENTS.md`](./AGENTS.md) 和 [`docs/development-constraints.md`](./docs/development-constraints.md)。后续代码、接口、数据、Agent 行为和部署变更都必须遵循这些约束。
