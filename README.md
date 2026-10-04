@@ -27,3 +27,7 @@ packages/
 ```
 
 后端内部边界见 [`packages/backend/src`](./packages/backend/src)，详细说明见 [`docs/architecture.md`](./docs/architecture.md)。
+
+## 开发约定
+
+Git 提交信息统一使用 `类型:中文描述` 格式，例如 `feat:增加策划需求解析`。完整规则见 [`CONTRIBUTING.md`](./CONTRIBUTING.md)。
