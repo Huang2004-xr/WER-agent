@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="WER Agent 产品需求文档：品牌策划公司的 Agent 平台、业务闭环、风险治理和分阶段建设目标。">
+  <title>WER Agent 产品需求文档</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #192a32;
+      --muted: #53656d;
+      --line: #d5dfe1;
+      --paper: #fff;
+      --canvas: #edf2f2;
+      --teal: #087e78;
+      --teal-soft: #e4f4f1;
+      --blue: #2859a6;
+      --blue-soft: #eaf0fa;
+      --gold: #8a5a00;
+      --gold-soft: #fff4d7;
+      --red: #9b352c;
+      --red-soft: #fff0ed;
+      --green: #327344;
+      --green-soft: #eaf5e9;
+      --shadow: 0 10px 32px rgb(25 42 50 / 7%);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font: 16px/1.72 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: var(--teal); }
+    .page { width: min(1240px, calc(100% - 40px)); margin: 28px auto 64px; }
+    .hero {
+      padding: 48px clamp(24px, 5vw, 64px);
+      border-top: 7px solid var(--teal);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+    .eyebrow { margin: 0 0 12px; color: var(--teal); font-size: 13px; font-weight: 750; text-transform: uppercase; }
+    h1 { max-width: 850px; margin: 0; font-size: clamp(32px, 5vw, 48px); line-height: 1.18; }
+    .subtitle { max-width: 850px; margin: 18px 0 26px; color: var(--muted); font-size: 18px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px 22px; padding-top: 17px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+    .meta strong { color: var(--ink); }
+    .notice { margin-top: 20px; padding: 16px 18px; border-left: 4px solid var(--gold); background: var(--gold-soft); }
+    .notice strong { color: var(--gold); }
+    .layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 24px; align-items: start; margin-top: 24px; }
+    nav {
+      position: sticky; top: 18px; max-height: calc(100vh - 36px); overflow: auto;
+      padding: 20px 18px; background: var(--paper); border: 1px solid var(--line);
+    }
+    nav h2 { margin: 0 0 12px; font-size: 16px; }
+    nav ol { margin: 0; padding-left: 22px; color: var(--muted); font-size: 13px; }
+    nav li { margin: 7px 0; }
+    nav a { color: inherit; text-decoration: none; }
+    nav a:hover { color: var(--teal); }
+    main { min-width: 0; }
+    section {
+      margin-bottom: 20px; padding: clamp(22px, 4vw, 40px);
+      background: var(--paper); border: 1px solid var(--line); box-shadow: 0 4px 16px rgb(25 42 50 / 3%);
+      scroll-margin-top: 20px;
+    }
+    h2 { margin: 0 0 18px; padding-bottom: 11px; border-bottom: 1px solid var(--line); font-size: 25px; line-height: 1.35; }
+    h3 { margin: 30px 0 10px; font-size: 19px; line-height: 1.4; }
+    h4 { margin: 20px 0 8px; font-size: 16px; }
+    p { margin: 10px 0; }
+    ul, ol { padding-left: 24px; }
+    li { margin: 5px 0; }
+    .lead { color: var(--muted); font-size: 17px; }
+    .callout { margin: 18px 0; padding: 15px 18px; border-left: 4px solid var(--blue); background: var(--blue-soft); }
+    .callout.success { border-color: var(--green); background: var(--green-soft); }
+    .callout.warning { border-color: var(--gold); background: var(--gold-soft); }
+    .callout.danger { border-color: var(--red); background: var(--red-soft); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+    .tile { padding: 16px; border: 1px solid var(--line); border-top: 3px solid var(--teal); background: #fbfdfd; }
+    .tile h3 { margin: 0 0 6px; font-size: 17px; }
+    .tile p { margin: 0; color: var(--muted); font-size: 14px; }
+    .flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 82px; display: grid; align-content: center; padding: 12px 14px; border: 1px solid #bdd7d4; background: var(--teal-soft); font-weight: 700; }
+    .flow-step small { display: block; color: var(--muted); font-size: 12px; font-weight: 500; }
+    .flow-step:not(:nth-child(4n))::after { content: "→"; position: absolute; z-index: 1; right: -12px; top: 25px; color: var(--teal); font-size: 20px; font-weight: 800; }
+    .table-wrap { overflow-x: auto; margin: 14px 0 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 10px 12px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: #eaf0f0; font-weight: 750; }
+    tbody tr:nth-child(even) { background: #fafcfc; }
+    .tag { display: inline-block; padding: 1px 7px; border: 1px solid var(--line); color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .tag.p0 { color: var(--red); border-color: #e5aaa4; background: var(--red-soft); }
+    .tag.p1 { color: var(--gold); border-color: #e5cf9c; background: var(--gold-soft); }
+    .tag.p2 { color: var(--blue); border-color: #b7c9e6; background: var(--blue-soft); }
+    .req { margin: 15px 0; padding: 15px 17px; border: 1px solid var(--line); }
+    .req h4 { margin: 0 0 5px; }
+    .req p { margin: 5px 0; }
+    .req .accept { color: var(--muted); font-size: 14px; }
+    code { padding: 1px 5px; background: #eef2f2; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; overflow-wrap: anywhere; }
+    .small { color: var(--muted); font-size: 13px; }
+    .phase { margin: 18px 0; padding-left: 18px; border-left: 3px solid var(--teal); }
+    .phase h3 { margin-top: 0; }
+    footer { padding: 22px 8px; color: var(--muted); font-size: 13px; text-align: center; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { position: static; max-height: none; }
+      nav ol { columns: 2; }
+    }
+    @media (max-width: 620px) {
+      .page { width: min(100% - 20px, 1240px); margin-top: 10px; }
+      .hero { padding: 30px 22px; }
+      .layout { gap: 12px; margin-top: 12px; }
+      section { padding: 22px 18px; margin-bottom: 12px; }
+      .grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow-step:not(:nth-child(4n))::after { content: none; }
+      .flow-step:nth-child(2n)::after { content: "↓"; position: absolute; right: 8px; bottom: -18px; top: auto; }
+      nav ol { columns: 1; }
+    }
+    @media print {
+      body { background: #fff; font-size: 11pt; }
+      .page { width: 100%; margin: 0; }
+      .hero, section { box-shadow: none; border: 1px solid #bbb; }
+      .layout { display: block; }
+      nav { display: none; }
+      section { break-inside: avoid-page; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <p class="eyebrow">Product Requirements Document · 产品需求文档</p>
+      <h1>WER Agent</h1>
+      <p class="subtitle">面向品牌策划公司内部策划人员的 Agent 平台：以可控的 Agent Runtime 为执行核心，支撑策划生产、项目交付与效果复盘。</p>
+      <div class="meta">
+        <span><strong>文档版本：</strong>V0.2（专业策划能力补强稿）</span>
+        <span><strong>文档状态：</strong>需求基线草案</span>
+        <span><strong>当前使用者：</strong>品牌策划公司内部策划人员（唯一使用群体）</span>
+        <span><strong>适用产品：</strong>WER Agent Web 应用及其后端平台</span>
+      </div>
+      <div class="notice"><strong>现状声明：</strong>本文描述产品目标和需求范围。当前仓库主要包含包级骨架与底座最小接口；下述业务能力均不能仅凭架构目录视为已经交付，必须按阶段开发、测试和验收。</div>
+    </header>
+
+    <div class="layout">
+      <nav aria-label="文档目录">
+        <h2>目录</h2>
+        <ol>
+          <li><a href="#summary">产品概述</a></li>
+          <li><a href="#goals">目标与原则</a></li>
+          <li><a href="#scope">产品范围与边界</a></li>
+          <li><a href="#users">用户与权限</a></li>
+          <li><a href="#journey">端到端业务流程</a></li>
+          <li><a href="#functional">功能需求</a></li>
+          <li><a href="#specialization">专业策划能力</a></li>
+          <li><a href="#risk">风险预案能力</a></li>
+          <li><a href="#platform">Agent 底座与 Harness</a></li>
+          <li><a href="#data">数据与集成要求</a></li>
+          <li><a href="#quality">非功能需求</a></li>
+          <li><a href="#phases">分阶段交付</a></li>
+          <li><a href="#acceptance">验收与指标</a></li>
+          <li><a href="#assumptions">假设、风险与待定项</a></li>
+          <li><a href="#glossary">术语表</a></li>
+        </ol>
+      </nav>
+
+      <main>
+        <section id="summary">
+          <h2>1. 产品概述</h2>
+          <p class="lead">WER Agent 是内部策划人员的业务工作平台，不是只负责生成文案的聊天窗口，也不是试图一次性替换所有企业软件的全能系统。</p>
+          <p>产品为内部策划人员提供统一的 Agent 工作入口和可追踪的项目工作区。策划人员可以用自然语言说明目标，也可以通过表单、文件和业务页面补充结构化信息。系统将请求转换为有边界的业务任务，由 Workflow（工作流）推进；模型负责理解、分析和生成候选内容，Harness（执行治理层）负责权限、状态、工具、副作用、审批和审计。业务模块保存具有权威性的项目事实与操作记录；客户、商务、财务和供应商信息在当前阶段由策划人员录入、查看或通过授权集成同步。</p>
+          <div class="grid">
+            <article class="tile"><h3>产品定位</h3><p>品牌策划业务的 Agent 工作平台，覆盖从客户机会到策划交付、项目执行及复盘的协同链路。</p></article>
+            <article class="tile"><h3>核心价值</h3><p>减少资料整理、研究、初稿和项目跟进中的重复工作，同时让决策依据、责任人和执行状态可回溯。</p></article>
+            <article class="tile"><h3>产品形态</h3><p>内部策划 Web Agent 工作台 + 结构化业务工作区 + 独立 API/Worker 服务；客户门户等外部入口属于后续阶段。</p></article>
+            <article class="tile"><h3>设计底线</h3><p>模型生成是建议，不自动成为业务事实；高风险工具操作受策略校验和人工审批控制。</p></article>
+          </div>
+        </section>
+
+        <section id="goals">
+          <h2>2. 产品目标与设计原则</h2>
+          <h3>2.1 总目标</h3>
+          <p>建设覆盖“客户经营—策划生产—项目交付—经营协同—效果复盘”的长期业务平台。Agent 底座作为跨业务的执行系统，策划、商务、财务、采购等能力作为受治理的业务模块逐步接入。</p>
+          <h3>2.2 产品目标</h3>
+          <ol>
+            <li>让项目资料、需求、决策、产物、审批和任务有统一关联关系，降低跨文件和跨工具的信息断裂。</li>
+            <li>让 Agent 可以可靠地完成多步骤业务任务，遇到缺资料、待确认、外部故障或进程重启时能暂停、恢复或转交人工。</li>
+            <li>让策划团队把精力集中在判断和创意上，Agent 承担信息收集、结构整理、草稿生成、任务拆解和状态跟踪。</li>
+            <li>让企业业务动作可授权、可审批、可审计，避免模型直接越权修改重要数据或产生不可逆影响。</li>
+            <li>让已确认的客户事实、项目知识、历史案例和反馈能够有来源、有版本地复用。</li>
+          </ol>
+          <h3>2.3 设计原则</h3>
+          <ul>
+            <li><strong>结构化流程优先：</strong>稳定业务流程由 Workflow 驱动，Agent 不以无边界的自由循环替代流程管理。</li>
+            <li><strong>显式路由：</strong>业务入口由服务端根据业务类型、项目状态和策划人员权限确定；模型不拥有系统级能力选择权。</li>
+            <li><strong>事实与建议分离：</strong>模型生成内容标记为草稿或建议，策划人员确认后才进入正式业务状态。</li>
+            <li><strong>高风险需确认：</strong>合同、报价、回款、采购、发布、外部发送和关键状态变更等动作必须进行策略判断，按风险要求审批。</li>
+            <li><strong>可恢复、可解释：</strong>长任务的当前步骤、输入快照、调用结果、等待原因和恢复点均可追踪。</li>
+            <li><strong>可替换而不锁定：</strong>模型、向量库、队列、对象存储和 Agent SDK 通过适配边界接入，不成为业务域的直接依赖。</li>
+          </ul>
+        </section>
+
+        <section id="scope">
+          <h2>3. 产品范围与系统边界</h2>
+          <h3>3.1 纳入目标系统的能力</h3>
+          <p class="small">下表描述 WER 的长期业务能力边界，不代表当前已开放对应岗位账号。当前所有操作均由内部策划人员完成；客户、商务、财务、采购、供应商等能力先作为策划工作的业务上下文、受控工具或后续扩展建设。</p>
+          <div class="table-wrap"><table>
+            <thead><tr><th>能力域</th><th>目标范围</th><th>系统承担的职责</th></tr></thead>
+            <tbody>
+              <tr><td>Agent Platform</td><td>请求运行、模型接入、Skill、Tool/MCP、Workflow、状态、记忆、知识检索、评测和观测。</td><td>提供可组合、可治理、可恢复的 Agent 执行底座。</td></tr>
+              <tr><td>客户经营</td><td>线索、客户、联系人、商机、跟进、需求和机会转化。</td><td>维护销售过程及其与项目的关联；提供 Agent 辅助摘要和下一步建议。</td></tr>
+              <tr><td>策划生产</td><td>Brief、研究、策略、创意、提案、审核、版本和交付。</td><td>支撑策划内容从输入资料到可评审产物的生产闭环。</td></tr>
+              <tr><td>项目交付</td><td>项目阶段、任务、排期、负责人、依赖、变更、风险和复盘。</td><td>把确认的方案转化为可跟踪执行计划，并管理执行事实。</td></tr>
+              <tr><td>商务与经营</td><td>报价、合同、回款状态、预算、工时成本、费用、项目利润分析。</td><td>形成项目经营视图；资金和会计事实以授权数据源为准。</td></tr>
+              <tr><td>采购与制作</td><td>供应商、询价、比价、采购、验收、线下制作资源与现场异常。</td><td>支持策划交付所需的外部资源协作和履约跟踪。</td></tr>
+              <tr><td>版权与素材</td><td>素材来源、权属、授权范围、地域、期限、渠道和商用限制。</td><td>让素材使用条件可检查、可提醒、可追溯。</td></tr>
+              <tr><td>客户协作</td><td>客户需求确认、提案反馈、交付物审阅和验收。</td><td>当前由策划人员记录或通过授权集成同步；后续再开放隔离的外部协作入口。</td></tr>
+              <tr><td>效果回流</td><td>项目效果指标、数据来源、客户反馈、复盘及案例沉淀。</td><td>由策划人员导入或通过授权集成回流，将结果与策略、创意和执行关联。</td></tr>
+            </tbody>
+          </table></div>
+          <h3>3.2 系统边界</h3>
+          <div class="callout"><strong>系统采用“WER 管理业务过程和协作状态，外部权威系统管理其擅长的权威事实”的边界。</strong>财务总账、税务申报、银行支付、广告平台投放、电子签章、法务合同签署等可通过集成协作，但在未建设对应能力前，不宣称由 WER 替代这些系统。</div>
+          <ul>
+            <li>WER 是项目和 Agent 操作上下文的主工作区；客户、商机、任务、审批、产物和项目风险由其业务域维护。</li>
+            <li>合同签署、支付和对外发布等不可逆操作可以从 WER 发起或准备，但必须遵循外部系统授权、公司审批及审计规则。</li>
+            <li>Agent 输出不能取代专业人员对品牌策略、法律、财务和线下安全事项的最终判断。</li>
+            <li>系统不以“自主 Agent”作为产品承诺；自主程度需按业务风险、确定性和用户授权逐项配置。</li>
+          </ul>
+          <h3>3.3 首期产品线与明确不做事项</h3>
+          <p>首期不同时追求覆盖所有策划类型。第一条可验收产品线聚焦“品牌策略提案”，第二条产品线聚焦“整合营销/活动提案”。两条产品线共用 Brief、研究、策略、创意、提案和审核底座，但拥有各自的方法论包、模板和评审标准。</p>
+          <div class="table-wrap"><table>
+            <thead><tr><th>首期产品线</th><th>核心输入</th><th>核心输出</th><th>首期成功条件</th></tr></thead>
+            <tbody>
+              <tr><td>品牌策略提案</td><td>品牌资料、业务目标、市场/竞品、目标人群、品牌约束。</td><td>问题定义、洞察、定位、策略支柱、品牌表达方向和提案。</td><td>策划人员可以追溯每条关键判断的依据，并完成内部评审。</td></tr>
+              <tr><td>整合营销/活动提案</td><td>传播目标、受众、渠道、时间、预算、执行限制和历史效果。</td><td>传播策略、创意概念、渠道组合、活动路径、任务拆解和风险预案。</td><td>方案能落到时间、预算、渠道和任务，不停留在口号生成。</td></tr>
+            </tbody>
+          </table></div>
+          <p class="small">首期暂不承诺覆盖所有行业方法、自动完成线下安全决策、自动签署合同、自动付款或完全替代专业负责人。</p>
+        </section>
+
+        <section id="users">
+          <h2>4. 用户角色、权限与责任</h2>
+          <p>当前 Agent 不面向多职能岗位或外部人员开放。所有实际使用者均为品牌策划公司内部策划人员，以下角色是同一使用群体中的职责分层，可由同一人员在不同项目中承担。</p>
+          <div class="table-wrap"><table>
+            <thead><tr><th>角色</th><th>主要诉求</th><th>典型权限</th></tr></thead>
+            <tbody>
+              <tr><td>策划人员</td><td>整理需求、研究、策略与创意、准备提案并跟进项目。</td><td>访问所参与项目；创建草稿、运行策划 Workflow、维护任务与风险、提交审核。</td></tr>
+              <tr><td>资深策划 / 审核负责人</td><td>在策划团队内部复核方案质量、品牌一致性、风险和交付准备度。</td><td>查看待审上下文、批准、驳回、要求补充；审核决定须留痕。</td></tr>
+              <tr><td>策划负责人 / 配置负责人</td><td>维护项目协作规则、方法论版本、模板、评测标准和团队使用边界。</td><td>配置策划域参数、启停版本、查看运行与质量数据；不因配置职责自动获得无关项目内容。</td></tr>
+              <tr><td>未来外部或职能协作者（非当前用户）</td><td>客户、商务、财务、采购、供应商等相关方的协作需求。</td><td>仅作为后续阶段的独立入口或外部系统集成对象；当前不创建其 Agent 登录账号。</td></tr>
+            </tbody>
+          </table></div>
+          <p><strong>权限规则：</strong>服务端必须对每次读取、Agent 上下文装配、工具调用、记忆检索和产物下载执行策划人员身份、组织、项目、资源及动作级授权。前端隐藏按钮不构成权限控制；未来外部协作者接入时必须使用独立的外部身份与授权域。</p>
+        </section>
+
+        <section id="journey">
+          <h2>5. 端到端业务流程</h2>
+          <p>典型主链路由策划人员从客户机会或客户 Brief 开始录入。不同项目可以从任一已授权阶段启动，但必须记录来源、责任人和关联项目。流程不是单向流水线：研究、策略、创意和提案之间允许有条件回退、并行路线和多轮收敛。</p>
+          <div class="flow" aria-label="业务主流程">
+            <div class="flow-step">客户机会 / 需求<small>线索、沟通、附件、目标</small></div>
+            <div class="flow-step">Brief 确认<small>字段整理、缺口澄清、策划人员记录客户确认</small></div>
+            <div class="flow-step">研究与洞察<small>证据、来源、假设和结论</small></div>
+            <div class="flow-step">策略与创意<small>候选方案、依据、风险</small></div>
+            <div class="flow-step">提案与审核<small>版本、评论、决策和定稿</small></div>
+            <div class="flow-step">商务与立项<small>范围、报价、合同状态、预算</small></div>
+            <div class="flow-step">项目执行<small>任务、排期、供应商、制作</small></div>
+            <div class="flow-step">交付与验收<small>产物、版权、策划人员记录客户确认</small></div>
+            <div class="flow-step">效果复盘<small>结果、归因、经验、案例</small></div>
+          </div>
+          <h3>5.1 Agent 请求执行生命周期</h3>
+          <ol>
+            <li><strong>接收：</strong>校验策划人员身份、组织上下文、输入大小和请求类型；创建可追踪的 Run（一次 Agent 运行）。</li>
+            <li><strong>定路由：</strong>根据显式业务入口、目标资源状态和服务端策略选择已注册 Workflow/Skill；不开放模型任意挑选高权限能力。</li>
+            <li><strong>准备上下文：</strong>按项目权限读取业务事实、相关文件、知识来源和必要记忆，附来源、时间和可见级别。</li>
+            <li><strong>计划与执行：</strong>模型生成中间判断或内容；Harness 校验输出格式、预算、工具权限和动作风险。</li>
+            <li><strong>等待或审批：</strong>缺少信息时向策划人员追问；需人工决定时将运行置为待确认，保存 Checkpoint（检查点）。</li>
+            <li><strong>副作用执行：</strong>执行写入、对外发送或业务状态变更前再次校验权限、参数、幂等键和审批状态。</li>
+            <li><strong>完成与沉淀：</strong>存储产物、引用、事件和结果；有选择地提交记忆候选；向策划人员说明完成、失败或待办事项。</li>
+            <li><strong>恢复与复盘：</strong>对超时、断连、Worker 重启或外部结果未知的运行按状态策略恢复、核对或转人工，不盲目重复副作用。</li>
+          </ol>
+          <h3>5.2 策划迭代与分支规则</h3>
+          <ul>
+            <li><strong>发散：</strong>在研究和创意阶段生成多个明确不同的路线，每条路线必须有假设、依据、适用条件和潜在风险。</li>
+            <li><strong>评估：</strong>使用专业评审量表、规则检查和人工反馈对路线排序；评估过程不能直接覆盖原始方案。</li>
+            <li><strong>收敛：</strong>策划人员选择、合并或淘汰路线，并记录选择原因；被淘汰路线可保留为项目历史，不进入默认上下文。</li>
+            <li><strong>回退：</strong>Brief、预算、客户反馈或执行限制变化时，系统展示受影响对象并允许回到指定步骤，而不是从头生成一份无法解释的新稿。</li>
+            <li><strong>锁定：</strong>策划人员可锁定已确认的策略、品牌约束或人工修改段落；后续 Agent 运行不得静默覆盖锁定内容。</li>
+          </ul>
+        </section>
+
+        <section id="functional">
+          <h2>6. 功能需求</h2>
+          <p>优先级：<span class="tag p0">P0 首期必需</span> <span class="tag p1">P1 业务扩展阶段</span> <span class="tag p2">P2 长期增强</span>。优先级表示交付顺序建议，不代表现状。</p>
+
+          <h3>6.1 Web 工作台与项目工作区</h3>
+          <div class="req"><h4>FR-UI-01｜统一工作入口 <span class="tag p0">P0</span></h4><p>策划人员可从 Agent 工作台发起新任务、继续历史会话、选择项目上下文并查看运行状态。</p><p class="accept"><strong>验收：</strong>每次运行显示状态、关联项目、启动人、最近更新时间和结果入口；策划人员不能看到无权访问的会话。</p></div>
+          <div class="req"><h4>FR-UI-02｜项目工作区 <span class="tag p0">P0</span></h4><p>以项目聚合 Brief、研究、策略、创意、提案、任务、审批、风险、产物和复盘；内容保留版本与责任人。</p><p class="accept"><strong>验收：</strong>策划人员从任一产物可追溯其项目、版本、来源和审核状态。</p></div>
+          <div class="req"><h4>FR-UI-03｜渐进式结构化输入 <span class="tag p0">P0</span></h4><p>支持自然语言、表单字段和文件作为任务输入；系统展示解析出的结构化摘要并允许策划人员修订。</p><p class="accept"><strong>验收：</strong>未确认的解析字段不覆盖原始输入或已确认业务事实。</p></div>
+          <div class="req"><h4>FR-UI-04｜待办、审批与通知 <span class="tag p1">P1</span></h4><p>集中展示待补信息、待审批、待办任务、风险升级和运行异常，并可跳回相应业务对象。</p></div>
+
+          <h3>6.2 客户、商机与 Brief</h3>
+          <div class="req"><h4>FR-CRM-01｜客户与联系人 <span class="tag p1">P1</span></h4><p>维护客户组织、品牌、联系人及关系记录，支持重复识别、合并审计和与项目关联。</p><p class="accept"><strong>验收：</strong>客户数据按组织和角色隔离；合并或删除保留审计信息。</p></div>
+          <div class="req"><h4>FR-CRM-02｜商机阶段 <span class="tag p1">P1</span></h4><p>维护线索来源、当前阶段、预计需求、负责人、下一步跟进和转项目结果；Agent 可根据记录生成摘要和建议，但不能自行将商机标记为已成交。</p></div>
+          <div class="req"><h4>FR-BRF-01｜Brief 收集和澄清 <span class="tag p0">P0</span></h4><p>从对话、表单和附件中整理业务目标、背景、受众、市场、预算范围、时间、交付物、限制条件和决策人；发现缺项或矛盾时提出针对性问题。</p><p class="accept"><strong>验收：</strong>系统输出字段状态（已确认、待确认、缺失、冲突）及来源；策划人员确认后生成版本化 Brief。</p></div>
+          <div class="req"><h4>FR-BRF-02｜需求变更追踪 <span class="tag p0">P0</span></h4><p>Brief 变更生成新版本，列明变化字段、提出者、时间和受影响的研究、提案、预算、任务及风险。</p></div>
+
+          <h3>6.3 研究、知识与记忆</h3>
+          <div class="req"><h4>FR-RES-01｜研究任务与证据 <span class="tag p0">P0</span></h4><p>支持定义研究问题、检索授权知识源、整理市场/竞品/受众信息，输出发现、依据、来源链接或文件定位、时间和可信度说明。</p><p class="accept"><strong>验收：</strong>引用可回到具体来源；无法验证的内容标为假设或待核实，不伪装为已证实事实。</p></div>
+          <div class="req"><h4>FR-KNW-01｜组织与项目知识 <span class="tag p0">P0</span></h4><p>管理公司方法论、已批准模板、品牌资料、项目文件和历史案例；按访问控制过滤检索结果并保留版本与来源。</p></div>
+          <div class="req"><h4>FR-MEM-01｜受控记忆 <span class="tag p1">P1</span></h4><p>区分短期运行上下文、会话状态、项目记忆、客户偏好和组织知识。记忆候选需来源、适用范围、置信信息、创建者和生命周期；敏感或推断性信息不得无提示写为持久记忆。</p><p class="accept"><strong>验收：</strong>策划人员可查看、纠正、删除或限制记忆；检索记忆时仍执行原数据权限。</p></div>
+
+          <div class="req"><h4>FR-BRAND-01｜品牌资产中心 <span class="tag p0">P0</span></h4><p>为每个客户/品牌维护定位、目标人群、品牌个性、语气、禁用表达、视觉规范、产品线关系、历史案例和已确认判断；每项资产必须有来源、版本、生效范围、负责人和复核日期。</p><p class="accept"><strong>验收：</strong>策略和创意 Skill 能按品牌范围检索资产；品牌之间不能串用；资产变更可比较、回滚和审计。</p></div>
+          <div class="req"><h4>FR-MTH-01｜方法论包与模板 <span class="tag p0">P0</span></h4><p>将 Brief 诊断、研究、品牌定位、传播策略、创意探索、提案叙事和反方评审封装为可版本化的 Methodology Pack；每个包声明输入、输出、约束、示例、评审量表和适用场景。</p><p class="accept"><strong>验收：</strong>策划负责人/配置负责人可启用、停用、回滚和指定某个项目使用的方法论版本；运行记录能还原当时使用的版本。</p></div>
+          <div class="req"><h4>FR-COL-01｜人机共创与局部修改 <span class="tag p0">P0</span></h4><p>策划人员可以按字段、段落或章节接受、拒绝、重写、锁定、评论、查看来源和比较版本；支持只查证、只改表达、反方评审等明确模式。</p><p class="accept"><strong>验收：</strong>Agent 重跑不会静默覆盖人工修改或锁定内容；每次变更可追溯到操作者、运行和版本。</p></div>
+          <div class="req"><h4>FR-EVAL-01｜策划专业质量评审 <span class="tag p0">P0</span></h4><p>对问题定义、洞察证据、策略一致性、品牌一致性、创意区分度、可执行性和提案表达分别评分；同时保存规则结果、模型评审、人工评分和客户采用结果。</p><p class="accept"><strong>验收：</strong>评审能定位具体缺陷和引用来源，不能只返回一个无法解释的总分；关键缺陷未处理时不能标记为可交付。</p></div>
+
+          <h3>6.4 策略、创意与提案</h3>
+          <div class="req"><h4>FR-STR-01｜策略产出 <span class="tag p0">P0</span></h4><p>基于已确认 Brief 和有来源的研究，生成问题定义、目标、洞察、定位方向、策略支柱、理由、待验证假设和风险。</p><p class="accept"><strong>验收：</strong>策略稿标记所依赖的 Brief/研究版本；内容可编辑、比较、评论和提交审核。</p></div>
+          <div class="req"><h4>FR-CRE-01｜创意探索 <span class="tag p0">P0</span></h4><p>生成多条可区分的创意方向、主题、信息表达和渠道适配建议；说明各方向与策略的对应关系，不将未经验证的创意自动定为最终方案。</p></div>
+          <div class="req"><h4>FR-PRO-01｜提案组装与版本 <span class="tag p0">P0</span></h4><p>按模板将 Brief、研究、策略、创意、执行建议和预算假设组装为提案初稿；支持章节修改、版本差异、审核记录和导出。</p><p class="accept"><strong>验收：</strong>导出的提案标明版本与审核状态；未经批准的草稿不能被误认为最终交付。</p></div>
+          <div class="req"><h4>FR-APR-01｜审核与决策 <span class="tag p0">P0</span></h4><p>支持提交、通过、驳回、要求修改和补充材料；记录审核人、意见、时间、对应版本及决策结果。</p></div>
+
+          <h3>6.5 项目、任务与交付</h3>
+          <div class="req"><h4>FR-PRJ-01｜项目阶段与状态 <span class="tag p0">P0</span></h4><p>项目阶段至少覆盖需求、研究、策划、提案、审批、执行、交付、复盘；阶段迁移需满足配置的必备条件和权限。</p></div>
+          <div class="req"><h4>FR-TSK-01｜执行任务拆解 <span class="tag p0">P0</span></h4><p>将批准方案转成任务、负责人、截止日期、依赖、输入产物、完成定义和阻塞状态；模型可建议拆解，但分派、排期和状态变更须按权限确认。</p><p class="accept"><strong>验收：</strong>任务可追溯到方案版本；依赖阻塞能体现在项目状态中。</p></div>
+          <div class="req"><h4>FR-DLV-01｜变更与交付验收 <span class="tag p1">P1</span></h4><p>由策划人员记录范围、时间、预算或交付物变更；支持内部和客户验收意见、修订轮次、交付清单和最终确认状态，客户意见当前通过策划人员录入或授权集成同步。</p></div>
+          <div class="req"><h4>FR-RET-01｜复盘与案例沉淀 <span class="tag p1">P1</span></h4><p>汇总目标、策略、执行、效果和客户反馈，区分事实、解释和推测；案例进入组织知识库前由指定人员审核并处理保密信息。</p></div>
+
+          <h3>6.6 商务、财务、采购与制作</h3>
+          <div class="req"><h4>FR-COM-01｜报价与合同状态 <span class="tag p1">P1</span></h4><p>维护报价版本、服务范围、假设、审批和合同状态；合同文本生成/审阅只作为辅助，签署和法律确认由授权人员及正式系统完成。</p></div>
+          <div class="req"><h4>FR-FIN-01｜预算、成本与项目收益 <span class="tag p1">P1</span></h4><p>按项目关联预算、人力工时、费用、供应商成本、合同收入和回款状态，展示计划与实际差异、毛利估算及数据来源；缺少真实数据时标记为估算。</p></div>
+          <div class="req"><h4>FR-PRC-01｜供应商与采购流程 <span class="tag p1">P1</span></h4><p>支持供应商档案、询价、比价记录、采购申请、审批、订单状态、交付验收和评价；采购承诺与下单为受控副作用。</p></div>
+          <div class="req"><h4>FR-PROD-01｜线下制作管理 <span class="tag p2">P2</span></h4><p>管理场地、设备、物料、人员、排期、进场条件、现场联系人、检查清单和突发事件；线下安全决策需由现场负责人确认。</p></div>
+          <div class="req"><h4>FR-RGT-01｜素材版权与授权 <span class="tag p1">P1</span></h4><p>记录素材来源、权属证明、授权主体、用途、渠道、地域、期限、是否可修改/转授权及续期提醒；授权条件不明确时阻断对外发布建议或要求法务/负责人确认。</p></div>
+          <div class="req"><h4>FR-EXT-01｜客户与供应商门户 <span class="tag p2">P2</span></h4><p>提供最小外部协作面，只展示显式授权内容；支持需求确认、评论、文件提交、验收和协作状态，不开放内部记忆、利润、内部评论和其他项目。</p></div>
+
+          <h3>6.7 效果数据与分析</h3>
+          <div class="req"><h4>FR-ANA-01｜项目效果回流 <span class="tag p2">P2</span></h4><p>支持导入或集成活动、媒介、传播、销售结果和客户反馈；记录指标口径、时间范围、来源、归因限制和数据完整性。</p></div>
+          <div class="req"><h4>FR-ANA-02｜决策支持 <span class="tag p2">P2</span></h4><p>将目标、策略、创意、执行和效果关联，生成可解释的复盘线索；不能把相关性直接表述为因果结论。</p></div>
+        </section>
+
+        <section id="specialization">
+          <h2>7. 专业策划能力与方法论需求</h2>
+          <p class="lead">这一层是 WER Agent 与普通通用 Agent 的核心差异：模型不是直接“写一份方案”，而是在可配置的方法论、品牌约束、证据链和专业评审标准下完成策划推理。</p>
+          <h3>7.1 方法论包（Methodology Pack）</h3>
+          <p>每个方法论包由步骤、输入字段、输出 Schema、约束规则、示例、评审量表和适用场景组成，可独立版本化、启停、回滚和评测。方法论包不是一段隐藏提示词。</p>
+          <div class="table-wrap"><table>
+            <thead><tr><th>方法论包</th><th>主要解决的问题</th><th>必须产出</th></tr></thead>
+            <tbody>
+              <tr><td>Brief 诊断</td><td>客户说了什么、真正要解决什么、哪些信息缺失或互相冲突。</td><td>事实、假设、问题、约束、决策人和待确认清单。</td></tr>
+              <tr><td>研究与证据</td><td>哪些市场、竞品、受众和行业信息足以支撑判断。</td><td>研究问题树、来源分级、证据卡片、冲突结论和研究缺口。</td></tr>
+              <tr><td>品牌定位</td><td>品牌为谁创造什么独特价值，凭什么被相信。</td><td>目标人群、竞争参照、洞察、定位陈述、价值支柱和品牌边界。</td></tr>
+              <tr><td>传播策略</td><td>如何把业务目标转成受众、信息、渠道和行动路径。</td><td>目标层级、受众分层、核心信息、触点、渠道角色、KPI 假设。</td></tr>
+              <tr><td>创意探索</td><td>如何产生有差异、可解释、可执行的创意路线。</td><td>概念、创意母题、表达示例、渠道适配、执行假设和风险。</td></tr>
+              <tr><td>提案叙事</td><td>如何让客户理解问题、相信判断并接受方案。</td><td>页面结构、每页结论、证据、决策点、讲稿和可能异议。</td></tr>
+              <tr><td>方案反方评审</td><td>方案哪里站不住、哪里无法执行、哪里可能被客户质疑。</td><td>反例、证据缺口、品牌冲突、成本/排期问题和修改建议。</td></tr>
+            </tbody>
+          </table></div>
+          <h3>7.2 品牌资产中心</h3>
+          <p>系统必须为客户或品牌建立独立的 Brand Workspace（品牌工作区），不能把品牌知识散落在普通聊天记忆中。品牌资产包括定位、使命/愿景、价值观、品牌个性、目标人群、语气、禁用表达、视觉规范、产品线关系、历史案例和已确认判断。</p>
+          <ul>
+            <li>每项品牌资产具有来源、版本、负责人、生效范围、适用产品线和过期/复核日期。</li>
+            <li>品牌规则可以被 Skill 和发布前检查调用；命中禁用表达或未授权资产时应提示并按策略阻断。</li>
+            <li>不同品牌、子品牌和客户必须隔离；品牌资产不能因为相似行业自动跨客户复用。</li>
+            <li>人工修改可以标记为临时项目决策或正式品牌规则，二者不能混为一谈。</li>
+          </ul>
+          <h3>7.3 专业策划质量评审</h3>
+          <div class="table-wrap"><table>
+            <thead><tr><th>评审维度</th><th>问题</th><th>建议方式</th></tr></thead>
+            <tbody>
+              <tr><td>问题定义</td><td>是否真正回答客户业务问题，而非改写 Brief。</td><td>规则检查 + 策划负责人评分。</td></tr>
+              <tr><td>洞察质量</td><td>是否由证据推导，是否具有目标人群相关性和行动价值。</td><td>证据覆盖检查 + 专家评分。</td></tr>
+              <tr><td>策略一致性</td><td>目标、洞察、定位、策略支柱、创意是否相互支撑。</td><td>结构化关系检查 + LLM Judge + 人工抽检。</td></tr>
+              <tr><td>品牌一致性</td><td>是否符合品牌资产、语气、视觉和禁用边界。</td><td>品牌规则引擎 + 人工确认。</td></tr>
+              <tr><td>创意区分度</td><td>多条路线是否真的不同，是否只是换了标题。</td><td>语义相似度辅助 + 创意负责人评分。</td></tr>
+              <tr><td>可执行性</td><td>是否满足预算、时间、渠道、资源和版权限制。</td><td>约束校验 + 项目/制作负责人评审。</td></tr>
+              <tr><td>表达与提案力</td><td>客户能否快速理解、相信并做出决策。</td><td>提案演练、客户反馈和修改轮次。</td></tr>
+            </tbody>
+          </table></div>
+          <p>评测结果必须区分“格式通过”“证据通过”“专业评分”和“客户采用”，不能用单一总分掩盖关键缺陷。</p>
+          <h3>7.4 多角色 Agent 协同边界</h3>
+          <p>首期采用受 Workflow 控制的角色化 Skill，不直接构建完全自治的多 Agent 社会。推荐角色包括 Brief Analyst（需求分析）、Researcher（研究）、Strategist（策略）、Creative Director（创意）、Critic（反方评审）、Proposal Editor（提案编排）和 Risk Reviewer（风险检查）。</p>
+          <ul>
+            <li>每个角色拥有明确输入、输出、只读/可写权限和完成条件。</li>
+            <li>角色之间通过结构化产物和事件交接，不通过未审计的隐式聊天共享状态。</li>
+            <li>Critic 和 Risk Reviewer 默认只读，不能直接覆盖主方案；修改必须形成候选变更。</li>
+            <li>角色可以并行运行，但最终合并、选定路线和对外交付必须回到 Workflow 和人工决策点。</li>
+          </ul>
+          <h3>7.5 人机共创交互</h3>
+          <ul>
+            <li>支持对章节、段落和字段执行接受、拒绝、重写、锁定、引用来源和添加评论。</li>
+            <li>支持“只查证、不改稿”“只优化表达、不改变策略”“生成反方意见”“比较两个版本”等明确模式。</li>
+            <li>展示本次结果使用的 Brief/品牌/知识/记忆来源及版本；策划人员可以移除某个上下文来源后重跑。</li>
+            <li>保留人工修改与 Agent 修改的差异，后续生成不得覆盖未锁定但已人工编辑的内容而不提示。</li>
+            <li>策划人员的选择、淘汰、修改和拒绝原因可作为评测数据，但不自动写入长期记忆或改变方法论规则。</li>
+          </ul>
+          <h3>7.6 模板与方法论运营</h3>
+          <p>管理员或资深策划可以维护 Brief、研究报告、策略、创意评审、提案和复盘模板，并将模板绑定到行业、客户、品牌、项目类型或交付格式。</p>
+          <ul>
+            <li>模板需要版本、适用范围、负责人、启用状态和变更说明；停用模板不能影响已运行项目的历史复现。</li>
+            <li>模板字段应区分必填、可选、条件必填和仅供参考，不能把所有内容都变成无意义的长表单。</li>
+            <li>模板运行结果进入专业评测和使用数据，支持比较不同模板对返工、采用率和交付耗时的影响。</li>
+            <li>组织方法论的修改必须经过指定审核；策划人员在项目中临时调整不能自动升级为公司标准。</li>
+          </ul>
+          <h3>7.7 关键门禁</h3>
+          <p>专业产物进入下一阶段前，Workflow 应执行确定性的门禁检查：</p>
+          <div class="table-wrap"><table>
+            <thead><tr><th>门禁</th><th>触发阶段</th><th>不满足时的处理</th></tr></thead>
+            <tbody>
+              <tr><td>Brief 完整性</td><td>Brief → 研究/策略</td><td>列出缺项、冲突和待确认决策，不允许直接生成正式策略。</td></tr>
+              <tr><td>证据覆盖</td><td>研究 → 策略</td><td>标记无来源判断、过期来源和冲突结论，允许保存草稿但禁止标记为可交付。</td></tr>
+              <tr><td>策略一致性</td><td>策略 → 创意/提案</td><td>要求补充目标、洞察、策略支柱或创意对应关系。</td></tr>
+              <tr><td>品牌与版权</td><td>创意/提案 → 对外版本</td><td>命中禁用表达、未授权素材或过期许可时阻断外发并创建处理任务。</td></tr>
+              <tr><td>预算与执行</td><td>提案 → 执行/采购</td><td>显示估算和缺口；超阈值或无负责人确认时进入审批。</td></tr>
+            </tbody>
+          </table></div>
+        </section>
+
+        <section id="risk">
+          <h2>8. 风险识别与预案管理需求</h2>
+          <p>风险管理必须贯穿 Brief、策划、商务、采购、执行和交付，不只是生成一段“注意事项”。系统为风险建立可跟踪对象，并将预案连接到项目任务和责任人。</p>
+          <h3>8.1 风险记录模型</h3>
+          <div class="table-wrap"><table>
+            <thead><tr><th>字段</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td>风险事项</td><td>明确描述可能发生什么；区分已发生问题与尚未发生的风险。</td></tr>
+              <tr><td>类别与来源</td><td>需求、策略、预算、排期、审批、供应商、制作现场、版权、数据安全、声誉或外部依赖；标注来自规则、策划人员、模型还是监测事件。</td></tr>
+              <tr><td>影响与可能性</td><td>记录影响对象、严重程度、发生可能性、评估依据及不确定性；不使用没有依据的精确概率。</td></tr>
+              <tr><td>触发条件</td><td>可观察的预警信号、阈值、截止时间或状态变化。</td></tr>
+              <tr><td>责任与时限</td><td>风险负责人、需要协作的人、下次检查时间及升级对象。</td></tr>
+              <tr><td>应对预案</td><td>规避、降低、转移、接受、替代方案、应急步骤、需要的资源和决策者。</td></tr>
+              <tr><td>关联对象</td><td>项目、Brief/方案版本、预算项、供应商、任务、交付物或审批记录。</td></tr>
+              <tr><td>状态与复盘</td><td>新建、评估中、处理中、已缓解、已发生、已关闭；保留状态变更和实际处置结果。</td></tr>
+            </tbody>
+          </table></div>
+          <h3>8.2 必须覆盖的典型风险</h3>
+          <ul>
+            <li>需求不完整、关键决策人缺席、客户目标互相冲突或需求中途变化。</li>
+            <li>研究来源过时、引用不足、市场假设未验证或不同数据源结论冲突。</li>
+            <li>策略与 Brief 不匹配，创意不符合品牌调性、受众或渠道约束。</li>
+            <li>预算估算缺项、成本超预算、合同范围与实际交付不一致或回款节点逾期。</li>
+            <li>审批延迟、关键任务依赖阻塞、档期冲突或项目交付延期。</li>
+            <li>供应商未确认、报价失效、交付质量或物料运输存在不确定性。</li>
+            <li>线下场地、设备、天气、人员、安全和应急联络准备不足。</li>
+            <li>素材版权证明缺失、授权期限/渠道不覆盖计划用途或肖像/商标存在争议。</li>
+            <li>客户资料、商业报价或未发布方案被越权访问或外发。</li>
+            <li>外部系统请求超时或返回不明，导致状态未知、重复提交或重复扣费/下单风险。</li>
+          </ul>
+          <h3>8.3 风险处理流程</h3>
+          <ol>
+            <li>系统从结构化规则、明确的业务信号和 Agent 分析中提出风险候选，并标注来源及依据。</li>
+            <li>责任人确认、修改或忽略候选；风险等级和预案不能仅凭无证据的模型判断自动定案。</li>
+            <li>对有效风险指定责任人、触发条件、复查日期和应对方案；必要时创建关联任务或审批。</li>
+            <li>满足触发条件或超过时限时，系统提醒责任人并按级别升级；通知失败也须进入可查询状态。</li>
+            <li>处置人记录实际行动和结果；项目复盘将预测、触发、处置和后果用于校准规则与知识。</li>
+          </ol>
+          <div class="callout warning"><strong>安全约束：</strong>涉及人身安全、重大资金、法律责任、客户承诺或对外发布的风险处置，不允许 Agent 自主执行不可逆动作。Agent 可以发现、解释、准备方案和创建待审批操作。</div>
+          <h3>8.4 风险验收标准</h3>
+          <ul>
+            <li>策划人员能够查看风险依据、负责人、预警条件、处理状态和变更历史。</li>
+            <li>风险可以关联到实际业务对象，不能成为脱离项目上下文的孤立提醒。</li>
+            <li>重复信号可合并或关联，避免告警风暴；关闭风险必须记录原因。</li>
+            <li>风险等级、通知渠道、升级时间和自动创建任务行为均可配置并审计。</li>
+            <li>预警或模型不可用时，核心项目操作仍可继续或降级为人工管理。</li>
+          </ul>
+        </section>
+
+        <section id="platform">
+          <h2>9. Agent 底座、Runtime 与 Harness 需求</h2>
+          <p>Runtime 是任务实际运行的执行环境；Harness 是围绕运行过程施加的上下文、权限、状态、工具治理、恢复和审计控制。两者共同构成 Agent 执行底座，但 Harness 不等于单条系统提示词。</p>
+          <div class="table-wrap"><table>
+            <thead><tr><th>底座能力</th><th>需求说明</th><th>验收要点</th></tr></thead>
+            <tbody>
+              <tr><td>请求与运行身份</td><td>每次运行携带 run、session、user、organization、project、workflow、权限快照和关联请求标识。</td><td>日志、状态与工具事件可从任一标识关联到完整执行链。</td></tr>
+              <tr><td>显式业务路由</td><td>由 API/应用服务按业务码、资源状态和授权策略选择 Workflow；运行中只开放该流程允许的 Skills/Tools。</td><td>越权入口在模型调用或工具执行前被拒绝并审计。</td></tr>
+              <tr><td>上下文构建</td><td>按预算加载任务状态、项目资料、知识检索结果、记忆和规则；区分可信系统数据与策划人员/外部不可信输入。</td><td>每个上下文来源和过滤策略可观察；超限时按优先级裁剪，不静默丢失关键约束。</td></tr>
+              <tr><td>Agent Loop</td><td>执行模型请求、检查响应、工具调用、继续/结束/等待的循环，并设置轮次、时间和 token/费用预算。</td><td>超预算、无效循环和模型异常可终止且状态明确。</td></tr>
+              <tr><td>Skill Registry</td><td>Skill（技能）声明用途、输入输出 Schema、版本、权限需求、适用 Workflow 和评测集；业务入口可确定性选择。</td><td>无注册或无授权 Skill 不可调用；版本变化可回滚和评测。</td></tr>
+              <tr><td>Tool/MCP Runtime</td><td>统一工具发现、参数校验、授权、速率限制、超时、结果规范化和调用审计；MCP（模型上下文协议）作为一种连接方式而非安全边界。</td><td>每次工具调用二次检查资源和动作权限；敏感参数不泄露到无关日志。</td></tr>
+              <tr><td>State 与持久化</td><td>保存步骤状态、消息/事件、工具调用、Checkpoint、审批等待和业务关联；支持状态迁移校验。</td><td>进程重启后可从最近一致状态恢复，重复事件不会重复产生业务效果。</td></tr>
+              <tr><td>Durable Workflow</td><td>Workflow（工作流）描述具备等待、超时、重试、取消、补偿、人工任务和跨 Worker 执行能力的业务过程。</td><td>断网、服务重启、长时间审批等待和外部调用未知结果均有定义的恢复行为。</td></tr>
+              <tr><td>Policy 与审批</td><td>统一判定身份、资源范围、动作风险、审批人、预算和数据规则；高风险工具按策略暂停执行。</td><td>审批绑定确定的参数摘要/版本；内容改变后旧审批失效或重新确认。</td></tr>
+              <tr><td>Memory 与 Retrieval</td><td>记忆服务保存经过筛选的跨任务事实；检索服务负责知识库召回。二者与会话原始历史、业务事实分开。</td><td>权限过滤、来源、有效期、删除/更正和敏感数据规则可验证。</td></tr>
+              <tr><td>记忆晋升与冲突</td><td>原始对话或运行结果只能产生候选记忆；由规则或授权人员确认后才晋升为项目、客户或组织记忆。冲突、过期和撤回必须有状态。</td><td>可查看“为何记住、由谁确认、适用范围和当前版本”；删除或更正能同步到检索层和缓存。</td></tr>
+              <tr><td>方法与版本治理</td><td>模型、Prompt、Skill、方法论包、Workflow、模板和策略规则独立版本化，运行固定版本快照。</td><td>任一交付结果可以复现其版本组合；新版本通过回归评测后才可设为默认，并可回滚。</td></tr>
+              <tr><td>上下文解释</td><td>为策划人员展示本次结果使用的 Brief、品牌资产、知识片段、记忆和规则来源，并允许移除来源后重跑。</td><td>上下文来源具有权限和版本；策划人员能区分系统事实、外部资料、模型推断和人工意见。</td></tr>
+              <tr><td>Observability</td><td>记录 Run、模型、Workflow、Skill、Tool、审批、错误、恢复和费用的结构化 Trace（链路追踪）。</td><td>可以定位失败阶段、恢复决策、耗时和调用成本；密钥及敏感内容脱敏。</td></tr>
+              <tr><td>Evaluation</td><td>对格式、引用、业务质量、安全、工具选择、审批绕过、恢复和版本回归进行自动化评测。</td><td>影响安全或关键业务质量的回归不允许无提示通过发布门禁。</td></tr>
+            </tbody>
+          </table></div>
+          <h3>9.1 运行状态建议</h3>
+          <p>最小运行状态包括：<code>queued</code>（排队）、<code>running</code>（执行中）、<code>waiting_input</code>（等待补充信息）、<code>waiting_approval</code>（等待审批）、<code>retry_scheduled</code>（等待重试）、<code>succeeded</code>（成功）、<code>failed</code>（失败）、<code>cancelled</code>（取消）和 <code>needs_reconciliation</code>（外部结果待核对）。状态迁移须经校验并产生审计事件。</p>
+          <h3>9.2 高风险动作控制</h3>
+          <ol>
+            <li>先定义动作分类、风险等级、允许角色和必需审批规则。</li>
+            <li>执行前由服务端校验策划人员授权、项目权限、参数 Schema、资源版本、幂等键和审批状态。</li>
+            <li>对外部副作用使用幂等键和调用记录；超时后先查询/对账，不默认立即重复提交。</li>
+            <li>写操作产生业务事件和审计记录；必要时提供补偿操作或人工核对队列。</li>
+          </ol>
+        </section>
+
+        <section id="data">
+          <h2>10. 数据、集成与信息治理</h2>
+          <h3>10.1 核心业务对象</h3>
+          <p>目标核心对象包括：组织与成员、客户与联系人、商机、项目、Brief 及版本、研究任务与证据、策略/创意/提案产物及版本、审批、任务、风险、供应商、报价与合同状态、预算/成本记录、素材与版权许可、客户反馈、交付记录、效果数据、Agent Run、Checkpoint、Tool 事件、审计事件和评测结果。</p>
+          <h3>10.2 数据治理要求</h3>
+          <ul>
+            <li>每条关键业务事实应记录来源、创建者、更新时间和必要的版本；模型生成草稿与策划人员确认事实分离存储或明确标记。</li>
+            <li>文件、产物、知识片段、记忆和运行状态都必须保留租户/组织及项目访问范围。</li>
+            <li>删除、归档、保留期限、导出和更正需符合组织数据策略；删除业务数据时应定义向量索引、缓存和记忆的同步清理策略。</li>
+            <li>跨系统同步应定义主数据归属、冲突处理、重试和对账流程；同步失败要可见，不得悄悄丢弃。</li>
+            <li>外部文件和网页内容视为不可信输入，不得把其文本指令提升为系统策略或权限。</li>
+          </ul>
+          <h3>10.3 系统集成类别</h3>
+          <ul>
+            <li>模型服务：通过 Model Gateway（模型网关）统一鉴权、路由、超时、重试和费用统计。</li>
+            <li>文件与文档：对象存储、Office/PDF 解析、提案导出和授权文件访问。</li>
+            <li>数据和知识：关系数据库、搜索/向量检索、缓存及组织知识来源。</li>
+            <li>组织协作：身份认证、通知、审批、日历或任务系统（按实际接入范围实施）。</li>
+            <li>业务外部系统：电子签章、财务、支付、采购、广告和媒介平台；需逐项定义授权与权威数据源。</li>
+          </ul>
+          <div class="callout warning">不预先锁定所有中间件品牌。选型应在吞吐、持久化、事务一致性、成本、团队运维能力和供应商依赖评估后形成架构决策记录。</div>
+        </section>
+
+        <section id="quality">
+          <h2>11. 非功能需求</h2>
+          <div class="table-wrap"><table>
+            <thead><tr><th>类别</th><th>要求</th><th>验证方式</th></tr></thead>
+            <tbody>
+              <tr><td>安全与授权</td><td>默认拒绝；服务端资源级授权；密钥托管；敏感数据脱敏；模型不可绕过 Policy 调用写工具。</td><td>越权访问、提示注入、工具权限、跨项目检索和数据导出测试。</td></tr>
+              <tr><td>可恢复性</td><td>长任务状态持久化；Worker 可横向扩展；租约和幂等保护并发执行；未知外部结果进入核对状态。</td><td>注入进程终止、超时、网络中断、重复消息和数据库短暂不可用。</td></tr>
+              <tr><td>并发隔离</td><td>同一组织多名策划人员并发时会话、项目、任务和锁范围明确；一个策划人员的运行不得污染另一策划人员上下文。</td><td>多名策划人员并行会话、同项目竞争写入和重复任务测试。</td></tr>
+              <tr><td>性能</td><td>交互请求与长任务分离；长任务异步排队；流式响应不阻塞 Worker；接口设定超时和分页。</td><td>按实际策划人员规模定义压测基线、P95 延迟和队列积压告警。</td></tr>
+              <tr><td>可靠性</td><td>关键写入具备事务边界；事件投递可重试；定期备份并验证恢复；外部依赖故障可降级。</td><td>备份恢复演练、故障注入和外部服务不可用测试。</td></tr>
+              <tr><td>可审计性</td><td>策划人员决策、审批、权限拒绝、Agent 运行、工具副作用和管理配置变更可追溯。</td><td>抽样审计能还原“谁在何时基于什么版本做了什么”。</td></tr>
+              <tr><td>可观测性</td><td>按 Run 关联 Trace、指标和日志；记录错误类别、耗时、模型和工具费用；避免日志泄露。</td><td>从告警可定位到失败运行及恢复责任人。</td></tr>
+              <tr><td>可维护性</td><td>模块契约稳定；模型和存储通过适配器替换；数据库迁移可审查；CI 覆盖类型、单测和集成测试。</td><td>升级适配器不要求策划领域直接改动供应商专有接口。</td></tr>
+              <tr><td>可访问性与易用性</td><td>运行状态、待确认内容和失败原因清晰；键盘可操作；小屏幕可阅读；不可仅用颜色表达状态。</td><td>关键策划人员流程的可用性测试和基本可访问性检查。</td></tr>
+              <tr><td>可配置性</td><td>模型、预算、工具范围、审批阈值、Workflow 版本和业务模板可按环境或组织配置并有审计。</td><td>配置变更可回滚，生产与测试配置明确隔离。</td></tr>
+            </tbody>
+          </table></div>
+          <p class="small">具体 SLA、并发数、留存期限和性能指标尚未提供，不能先编造数值；在试点容量、成本和合规要求明确后确定验收阈值。</p>
+        </section>
+
+        <section id="phases">
+          <h2>12. 分阶段交付建议</h2>
+          <p>以下为需求优先顺序建议，不代表已有版本承诺。每一阶段均须以真实策划人员流程和自动化验收结果为准。</p>
+          <div class="phase"><h3>阶段 0｜产品与工程基线</h3><p>确认角色、项目数据模型、权限边界、核心交互流程、部署环境和业务术语；完成平台包契约与安全威胁模型。</p><p><strong>出口条件：</strong>关键领域对象、主流程、权限策略和运行状态定义通过评审。</p></div>
+          <div class="phase"><h3>阶段 1｜安全可恢复的 Agent 底座</h3><p>完成 Web/API/Worker 请求链、身份与项目上下文、显式路由、Agent Loop、Harness、Skill/Tool 注册、会话与 Run 状态、审批等待、审计、基础 Trace 和离线评测。</p><p><strong>出口条件：</strong>可运行受控的测试 Agent；能等待审批、恢复、取消；没有授权的工具不能调用。</p></div>
+          <div class="phase"><h3>阶段 2｜首期专业策划产品线</h3><p>围绕品牌策略提案和整合营销/活动提案，完成 Brief 诊断、品牌资产中心、文件解析、研究证据、方法论包、策略、创意、提案版本、审核和局部修改。</p><p><strong>出口条件：</strong>一条真实策划项目从需求录入到内部审核提案可闭环；每个关键判断可追溯；方法论、品牌规则和提案模板均有固定版本。</p></div>
+          <div class="phase"><h3>阶段 3｜专业评测、风险治理与团队协作</h3><p>上线策划质量评审、方案反方评审、风险对象、预警、责任人、预案、审批/待办中心、项目知识与经审核的记忆能力。</p><p><strong>出口条件：</strong>系统能解释方案哪里好、哪里缺证据、哪里不可执行；风险可以在项目中跟踪、升级、处置和复盘，记忆可查看和纠正。</p></div>
+          <div class="phase"><h3>阶段 4｜客户经营与商务协同</h3><p>扩展客户、商机、报价、合同状态、回款跟踪及项目预算成本，建立必要的审批和外部系统集成。</p><p><strong>出口条件：</strong>商机转项目及项目经营数据来源、权限和对账规则明确。</p></div>
+          <div class="phase"><h3>阶段 5｜供应链、线下制作与版权</h3><p>增加供应商、采购、制作排期和现场执行，建立素材权属、许可条件及发布检查。</p><p><strong>出口条件：</strong>采购/制作副作用有审批、幂等、审计和异常恢复；版权条件可用于发布前检查。</p></div>
+          <div class="phase"><h3>阶段 6｜客户门户与效果数据回流</h3><p>开放最小外部协作、客户确认与验收；接入效果数据并形成受证据约束的复盘和案例知识。</p><p><strong>出口条件：</strong>外部账号隔离验证通过；数据口径及效果结论可追溯至来源。</p></div>
+        </section>
+
+        <section id="acceptance">
+          <h2>13. 总体验收标准与产品指标</h2>
+          <h3>13.1 系统级验收标准</h3>
+          <ul>
+            <li>核心业务可通过明确入口启动；每次 Agent Run 关联策划人员、组织、项目、Workflow 版本和输入来源。</li>
+            <li>模型输出与已确认业务事实区分；引用可追溯；关键产物具备版本、审核和责任人。</li>
+            <li>权限在服务端及工具执行处生效；未经授权的读取和写入均被拒绝并留审计记录。</li>
+            <li>高风险动作支持审批；审批内容和执行参数一致，参数变化会触发重新确认。</li>
+            <li>长任务能在等待、重试、取消、重启及外部结果未知情形下进入明确状态，不静默丢失。</li>
+            <li>风险对象可追踪到项目、触发条件、负责人、预案、处置和结案。</li>
+            <li>核心策划流程存在可重复运行的回归评测集；安全与恢复测试纳入发布检查。</li>
+            <li>业务数据能够导出或通过 API 按权限读取，避免关键事实被锁在对话记录中。</li>
+          </ul>
+          <h3>13.2 建议跟踪的产品指标</h3>
+          <div class="table-wrap"><table>
+            <thead><tr><th>指标方向</th><th>候选指标</th><th>注意事项</th></tr></thead>
+            <tbody>
+              <tr><td>业务效率</td><td>Brief 完成耗时、提案首稿耗时、项目状态更新耗时、重复整理工时。</td><td>建立试点前基线，按业务类型分层比较。</td></tr>
+              <tr><td>产物质量</td><td>引用完整率、审核一次通过率、重大返工率、客户修改轮次。</td><td>指标不能鼓励减少必要审核或隐藏失败。</td></tr>
+              <tr><td>专业质量</td><td>问题定义通过率、洞察证据覆盖率、策略一致性缺陷率、创意方向区分度、方案可执行性评分、提案被采用率。</td><td>由规则、模型评审、专业人员评分和客户结果共同组成，不能只依赖 LLM Judge。</td></tr>
+              <tr><td>人机协作</td><td>Agent 建议接受/修改/拒绝比例、人工编辑被保留率、策划人员重跑率、反方评审使用率。</td><td>区分“策划人员没有使用”与“策划人员认为质量不足”，通过行为和访谈结合判断。</td></tr>
+              <tr><td>任务可靠性</td><td>Run 成功/失败/恢复比例、外部结果待核对数量、重复副作用数量。</td><td>“自动重试成功”不等同于业务正确，需抽查结果。</td></tr>
+              <tr><td>知识与方法论</td><td>有效品牌资产使用率、过期知识命中率、方法论版本回归通过率、模板复用率。</td><td>错误记忆和过期规则应作为负向指标单独追踪。</td></tr>
+              <tr><td>风险管理</td><td>风险按时处理率、逾期风险数、预案触发与有效性、版权信息完整度。</td><td>风险预测命中与漏报均需分析，避免只追求告警数量。</td></tr>
+              <tr><td>使用与成本</td><td>活跃策划人员/项目、功能复用率、单次任务模型和工具成本。</td><td>结合策划人员的质量反馈和采纳行为分析，不能单独优化 token 成本。</td></tr>
+            </tbody>
+          </table></div>
+          <p class="small">正式目标值在选定试点项目、策划人员规模、基线工时、质量评审口径和成本预算后确定。</p>
+        </section>
+
+        <section id="assumptions">
+          <h2>14. 假设、产品风险与待定项</h2>
+          <h3>14.1 当前假设</h3>
+          <ul>
+            <li>当前唯一使用者是品牌策划公司内部策划人员；资深策划、审核负责人和配置负责人属于策划团队内部职责分层。</li>
+            <li>客户、商务、财务、采购和供应商不是当前 Agent 用户；相关数据由策划人员录入、查看或经授权集成同步，外部入口按后续阶段单独建设。</li>
+            <li>系统首先支持策划生产及项目交付，客户经营、财务、采购和效果数据逐步建设。</li>
+            <li>系统采用前后端分离的 Web 形态，长任务交由 Worker 执行。</li>
+            <li>模型、SDK 和外部平台会变化，业务层必须依赖内部稳定契约而非直接绑定单一供应商。</li>
+            <li>多组织隔离的强度和部署模式待业务规模、客户数据要求和合同约束进一步确认。</li>
+          </ul>
+          <h3>14.2 主要产品风险与应对</h3>
+          <div class="table-wrap"><table>
+            <thead><tr><th>风险</th><th>影响</th><th>应对方向</th></tr></thead>
+            <tbody>
+              <tr><td>首期范围过大</td><td>系统模块过多，无法形成可靠的核心闭环。</td><td>先交付安全底座和策划生产闭环；后续模块以业务价值、数据准备和集成复杂度排序。</td></tr>
+              <tr><td>模型答案被当成业务事实</td><td>错误信息进入提案、预算或客户承诺。</td><td>事实来源标注、草稿/确认状态分离、高风险审批和产物版本机制。</td></tr>
+              <tr><td>Agent 自由度过高</td><td>越权调用、操作错误、成本失控或无法复现。</td><td>显式 Workflow 路由、最小权限、预算上限、参数 Schema、运行终止条件。</td></tr>
+              <tr><td>外部操作结果不确定</td><td>重复发信、重复下单或业务状态不一致。</td><td>幂等键、操作记录、结果查询、对账队列和人工核对状态。</td></tr>
+              <tr><td>知识和记忆过期</td><td>错误偏好或旧案例持续影响新项目。</td><td>来源、版本、有效期、责任人、策划人员更正、归档和权限同步。</td></tr>
+              <tr><td>业务数据分散</td><td>成本、进度和效果分析缺乏可信数据。</td><td>定义权威数据源、同步 SLA、数据质量状态和缺失值表达。</td></tr>
+              <tr><td>外部协作泄露内部信息</td><td>报价、策略草稿或内部评审意见暴露。</td><td>外部门户单独权限模型、默认不共享、分享审批和访问审计。</td></tr>
+            </tbody>
+          </table></div>
+          <h3>14.3 进入详细设计前需要确认</h3>
+          <ul>
+            <li>首期试点策划人员、项目类型、真实项目数量和必须接入的资料来源。</li>
+            <li>公司现有身份、客户管理、财务、协作、文件和审批系统及其主数据归属。</li>
+            <li>哪些业务动作可以自动执行，哪些必须二次确认或审批，审批角色和授权金额/风险阈值。</li>
+            <li>客户数据、报价、合同、创意和素材的保留期限、脱敏、删除、模型使用及跨境要求。</li>
+            <li>并发、响应时间、运行成本、可用性、灾备和审计保留的数值目标。</li>
+            <li>正式发布提案、向客户发送信息、创建采购单和记录回款等流程的权威系统与责任人。</li>
+          </ul>
+        </section>
+
+        <section id="glossary">
+          <h2>15. 术语表</h2>
+          <div class="table-wrap"><table>
+            <thead><tr><th>术语</th><th>中文解释</th><th>本文中的含义</th></tr></thead>
+            <tbody>
+              <tr><td>Agent</td><td>智能体</td><td>通过模型理解任务，并在受控环境中调用工具、推进任务和生成结果的软件能力。</td></tr>
+              <tr><td>Runtime</td><td>运行时</td><td>实际承载一次或多次 Agent 执行的程序环境，负责调度模型循环与执行资源。</td></tr>
+              <tr><td>Harness</td><td>执行治理层/执行框架</td><td>控制 Agent 上下文、工具权限、运行状态、审批、预算、恢复和审计的一组机制与组件。</td></tr>
+              <tr><td>Workflow</td><td>工作流</td><td>具有明确步骤、分支、等待、审批、失败处理和完成条件的业务流程。</td></tr>
+              <tr><td>Skill</td><td>技能</td><td>可按契约调用的任务能力说明及其输入、输出、约束和评测，不等同于一段提示词。</td></tr>
+              <tr><td>Tool</td><td>工具</td><td>Agent 可请求调用的确定性操作接口，例如读取项目状态或创建任务。</td></tr>
+              <tr><td>MCP</td><td>模型上下文协议</td><td>用于连接模型应用与外部工具/资源的一种协议；权限控制仍须由接入方执行。</td></tr>
+              <tr><td>Policy</td><td>策略规则</td><td>关于身份、资源、动作、风险、数据和审批的可执行约束。</td></tr>
+              <tr><td>Checkpoint</td><td>检查点</td><td>运行暂停或进程故障前持久化的状态快照，用于安全恢复任务。</td></tr>
+              <tr><td>Idempotency</td><td>幂等</td><td>同一个逻辑操作重复提交时，不重复产生业务效果的设计属性。</td></tr>
+              <tr><td>Trace</td><td>链路追踪</td><td>把一次运行中的模型、Workflow、Tool、审批和错误事件按关联标识串联起来。</td></tr>
+              <tr><td>Retrieval</td><td>检索</td><td>从授权知识源中找到与当前任务相关的资料，并返回来源及片段。</td></tr>
+              <tr><td>Memory</td><td>记忆</td><td>跨请求保存、检索经过筛选的事实、偏好或经验；不等同于完整聊天记录或权威业务数据库。</td></tr>
+              <tr><td>PRD</td><td>产品需求文档</td><td>描述产品目标、用户、范围、行为需求、质量要求、验收和交付阶段的产品文档。</td></tr>
+            </tbody>
+          </table></div>
+        </section>
+      </main>
+    </div>
+    <footer>WER Agent · 产品需求文档 V0.2 · 目标需求与现状边界以本文“现状声明”为准</footer>
+  </div>
+</body>
+</html>

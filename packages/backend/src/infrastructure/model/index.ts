@@ -1,1 +1,2 @@
-export interface ModelProvider { readonly name: string; complete(prompt: string): Promise<string>; }
+export type { ModelProvider } from "./model-provider.js";
+export { DemoModelProvider } from "./demo-model-provider.js";

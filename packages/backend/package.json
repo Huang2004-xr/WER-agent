@@ -5,10 +5,11 @@
   "type": "module",
   "types": "./dist/index.d.ts",
   "dependencies": { "@wer/shared": "workspace:*" },
-  "devDependencies": { "@types/node": "^22.10.2", "typescript": "^5.7.2" },
+  "devDependencies": { "@types/node": "^22.10.2", "tsx": "^4.19.2", "typescript": "^5.7.2" },
   "exports": { ".": "./dist/index.js" },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test src/app/application.test.ts src/infrastructure/config/environment-config.test.ts src/infrastructure/queue/in-memory-job-queue.test.ts src/modules/agent-runtime/index.test.ts src/modules/harness/index.test.ts src/modules/planning/planning.test.ts src/modules/state/index.test.ts"
   }
 }

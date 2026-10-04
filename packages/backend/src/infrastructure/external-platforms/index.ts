@@ -1,1 +1,2 @@
-export interface ExternalPlatformConnector { readonly platform: string; search(query: string): Promise<readonly string[]>; }
+export type { ExternalPlatformConnector } from "./platform-connector.js";
+export { HttpPlatformClient } from "./http-platform-client.js";

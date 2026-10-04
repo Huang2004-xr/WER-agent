@@ -1,1 +1,2 @@
-export interface ObjectStorage { put(key: string, content: Uint8Array): Promise<string>; }
+export type { ObjectStorage } from "./object-storage.js";
+export { LocalObjectStorage } from "./local-object-storage.js";

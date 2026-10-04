@@ -1,1 +1,2 @@
-export interface JobQueue { enqueue<T>(name: string, payload: T): Promise<void>; }
+export type { JobQueue, QueuedJob } from "./in-memory-job-queue.js";
+export { InMemoryJobQueue } from "./in-memory-job-queue.js";

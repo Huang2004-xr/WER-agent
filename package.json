@@ -7,6 +7,7 @@
     "dev": "pnpm --filter @wer/api dev",
     "dev:web": "pnpm --filter @wer/web dev",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter @wer/backend test"
   }
 }
