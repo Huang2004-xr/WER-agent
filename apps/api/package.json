@@ -1,0 +1,13 @@
+{
+  "name": "@wer/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": { "@wer/backend": "workspace:*" },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": { "tsx": "^4.19.2", "@types/node": "^22.10.2", "typescript": "^5.7.2" }
+}
