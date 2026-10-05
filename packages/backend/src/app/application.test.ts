@@ -73,4 +73,45 @@ describe("Application", () => {
     assert.equal(result.result.strategy.audience, "年轻职场人");
     assert.equal((await application.stateStore.get("planning-run-1" as never))?.status, "completed");
   });
+
+  it("cancels an active run and preserves the cancelled state", async () => {
+    const application = createApplication({
+      runtime: {
+        run: ({ signal }) => new Promise((_, reject) => {
+          signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+        }),
+      },
+      idGenerator: { next: () => "run-test-cancelled" },
+    });
+    const running = application.handleChat({ sessionId: "session-1", message: "生成方案" }, { requestId: "request-1" });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await application.cancelRun("run-test-cancelled" as never);
+
+    await assert.rejects(running, (error: unknown) => {
+      assert.equal((error as { code?: string }).code, "RUN_CANCELLED");
+      return true;
+    });
+    assert.equal((await application.stateStore.get("run-test-cancelled" as never))?.status, "cancelled");
+  });
+
+  it("resumes a waiting run from its checkpoint without creating a new run", async () => {
+    let resumed = false;
+    const application = createApplication({
+      runtime: {
+        run: async ({ checkpoint }) => {
+          if (!checkpoint) return { status: "waiting_approval", steps: 1, checkpoint: { step: 1, messages: [{ role: "user", content: "生成方案" }], pendingTool: { toolName: "publish", input: {} } } };
+          resumed = true;
+          return { status: "completed", steps: 2, output: "已完成", checkpoint };
+        },
+      },
+      idGenerator: { next: () => "run-test-resume" },
+    });
+    const waiting = await application.handleChat({ sessionId: "session-1", message: "生成方案" }, { requestId: "request-1" });
+    const result = await application.resumeRun(waiting.runId as never, { requestId: "request-2" });
+
+    assert.equal(waiting.status, "waiting");
+    assert.equal(result.message, "已完成");
+    assert.equal(resumed, true);
+    assert.equal((await application.stateStore.get(waiting.runId as never))?.status, "completed");
+  });
 });

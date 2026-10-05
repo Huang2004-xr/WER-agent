@@ -18,6 +18,7 @@ export interface Application {
   readonly stateStore: ApplicationPorts["stateStore"];
   handleChat(input: ChatRequest, context: { readonly requestId: string }): Promise<ChatResponse>;
   handlePlanning(input: PlanningRequest, context: { readonly requestId: string }): Promise<PlanningResponse>;
+  resumeRun(runIdentifier: RunId, context: { readonly requestId: string }): Promise<ChatResponse>;
   cancelRun(runIdentifier: RunId, reason?: string): Promise<void>;
 }
 
@@ -56,36 +57,59 @@ export class DefaultApplication implements Application {
     await this.createRun(currentRunId, currentSessionId, requestContext.requestId, input.message, input.idempotencyKey);
     await this.appendEvent({ type: "run.started", at: this.ports.clock.now().toISOString(), ...requestContext });
 
+    const response = await this.executeAgentRun(currentRunId, requestContext, input.message);
+    if (input.idempotencyKey) this.idempotentResponses.set(input.idempotencyKey, response);
+    return response;
+  }
+
+  async resumeRun(runIdentifier: RunId, context: { readonly requestId: string }): Promise<ChatResponse> {
+    const state = await this.ports.stateStore.get(runIdentifier);
+    if (!state) throw new ApplicationError("NOT_FOUND", "run not found", requestId(context.requestId));
+    if (!state.checkpoint || !state.input) throw new ApplicationError("INVALID_REQUEST", "run has no resumable checkpoint", requestId(context.requestId));
+    if (state.status !== "waiting_approval" && state.status !== "failed" && state.status !== "paused") {
+      throw new ApplicationError("INVALID_REQUEST", `run is not resumable from status ${state.status}`, requestId(context.requestId));
+    }
+    const currentSessionId = state.sessionId;
+    await this.ports.stateStore.update(runIdentifier, { status: "running" });
+    const requestContext = { requestId: requestId(context.requestId), sessionId: currentSessionId, runId: runIdentifier } satisfies RequestContext;
+    return this.executeAgentRun(runIdentifier, requestContext, state.input, state.checkpoint);
+  }
+
+  private async executeAgentRun(
+    runIdentifier: RunId,
+    requestContext: { readonly requestId: ReturnType<typeof requestId>; readonly sessionId: ReturnType<typeof sessionId>; readonly runId: RunId },
+    message: string,
+    checkpoint?: NonNullable<Awaited<ReturnType<ApplicationPorts["stateStore"]["get"]>>>["checkpoint"],
+  ): Promise<ChatResponse> {
     try {
       await this.authorizeStep(requestContext);
       const controller = new AbortController();
-      this.activeControllers.set(currentRunId, controller);
+      this.activeControllers.set(runIdentifier, controller);
       const runResult = await this.withTimeout(this.ports.runtime.run({
-        runId: currentRunId,
+        runId: runIdentifier,
         requestId: requestContext.requestId,
-        sessionId: currentSessionId,
-        message: input.message,
+        sessionId: requestContext.sessionId!,
+        message,
         signal: controller.signal,
+        ...(checkpoint ? { checkpoint: { ...checkpoint, messages: checkpoint.messages.map((item) => ({ role: item.role, content: item.content })) } } : {}),
       }), controller);
       const status = runResult.status === "waiting_approval" ? "waiting" : "completed";
-      const message = runResult.output ?? (status === "waiting" ? "等待人工审批后继续执行" : "");
-      await this.ports.stateStore.update(currentRunId, {
+      const output = runResult.output ?? (status === "waiting" ? "等待人工审批后继续执行" : "");
+      await this.ports.stateStore.update(runIdentifier, {
         status: status === "waiting" ? "waiting_approval" : "completed",
-        output: message,
+        output,
         step: runResult.steps,
         ...(runResult.checkpoint ? { checkpoint: runResult.checkpoint } : {}),
       });
       await this.appendEvent({ type: status === "waiting" ? "run.waiting_approval" : "run.completed", at: this.ports.clock.now().toISOString(), ...requestContext });
-      const response: ChatResponse = { runId: currentRunId, message, status };
-      if (input.idempotencyKey) this.idempotentResponses.set(input.idempotencyKey, response);
-      return response;
+      return { runId: runIdentifier, message: output, status };
     } catch (error) {
-      await this.markFailed(currentRunId, requestContext, error);
-      const state = await this.ports.stateStore.get(currentRunId);
-      if (state?.status === "cancelled") throw new ApplicationError("RUN_CANCELLED", state.cancelReason ?? "run cancelled", requestId(context.requestId));
-      throw this.toRunError(error, context.requestId);
+      await this.markFailed(runIdentifier, requestContext, error);
+      const state = await this.ports.stateStore.get(runIdentifier);
+      if (state?.status === "cancelled") throw new ApplicationError("RUN_CANCELLED", state.cancelReason ?? "run cancelled", requestContext.requestId);
+      throw this.toRunError(error, requestContext.requestId);
     } finally {
-      this.activeControllers.delete(currentRunId);
+      this.activeControllers.delete(runIdentifier);
     }
   }
 
@@ -154,15 +178,15 @@ export class DefaultApplication implements Application {
   }
 
   private async markFailed(runIdValue: ReturnType<typeof runId>, context: RequestContext, error: unknown): Promise<void> {
+    const current = await this.ports.stateStore.get(runIdValue);
     try {
-      const current = await this.ports.stateStore.get(runIdValue);
       if (current?.status !== "cancelled" && current?.status !== "completed") {
         await this.ports.stateStore.update(runIdValue, { status: "failed" });
       }
     } finally {
       await this.appendEvent({
         runId: runIdValue,
-        type: "run.failed",
+        type: current?.status === "cancelled" ? "run.cancelled" : "run.failed",
         at: this.ports.clock.now().toISOString(),
         ...context,
         data: { reason: error instanceof Error ? error.message : "unknown error" },
@@ -176,7 +200,7 @@ export class DefaultApplication implements Application {
   }
 
   private async appendEvent(event: Parameters<ApplicationPorts["eventSink"]["append"]>[0]): Promise<void> {
-    await this.ports.eventSink.append(event);
+    await Promise.all([this.ports.eventSink.append(event), this.ports.harness.record(event)]);
   }
 
   async cancelRun(runIdentifier: RunId, reason = "cancelled by user"): Promise<void> {

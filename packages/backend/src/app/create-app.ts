@@ -106,6 +106,23 @@ export const createApi = (options: ApiOptions = {}) => {
       return;
     }
 
+    const resumeMatch = url.pathname.match(/^\/api\/v1\/runs\/([^/]+)\/resume$/);
+    if (request.method === "POST" && resumeMatch) {
+      const foundRunId = resumeMatch[1];
+      if (!foundRunId) {
+        json(response, { error: { code: "NOT_FOUND", message: "run not found" } }, 404);
+        return;
+      }
+      try {
+        const result = await application.resumeRun(runId(foundRunId), { requestId: String(request.headers["x-request-id"] ?? randomUUID()) });
+        json(response, result satisfies ChatResponse);
+      } catch (error) {
+        const appError = error instanceof ApplicationError ? error : new ApplicationError("RUN_FAILED", "run resume failed", undefined, error);
+        json(response, { error: { code: appError.code, message: appError.message } }, appError.code === "NOT_FOUND" ? 404 : 500);
+      }
+      return;
+    }
+
     json(response, { error: { code: "NOT_FOUND", message: "not found" } }, 404);
   };
 };

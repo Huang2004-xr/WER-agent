@@ -1,2 +1,3 @@
-export type { JobQueue, QueuedJob } from "./in-memory-job-queue.js";
-export { InMemoryJobQueue } from "./in-memory-job-queue.js";
+export interface QueuePort<TPayload = unknown> {
+  enqueue(type: string, payload: TPayload, options?: { jobId?: string; delayMs?: number; attempts?: number }): Promise<string>;
+}

@@ -1,9 +1,7 @@
 import { DefaultAgentRuntime, DemoModelGateway, type AgentRuntime } from "../modules/agent-runtime/index.js";
 import { DefaultHarness, type Harness } from "../modules/harness/index.js";
-import { InMemoryEventSink, type EventSink } from "../modules/observability/index.js";
-import { InMemoryStateStore, type StateStore } from "../modules/state/index.js";
-import { InMemoryRunStore } from "../infrastructure/persistence/index.js";
-import { InMemoryEventStore } from "../infrastructure/persistence/index.js";
+import type { EventSink } from "../modules/observability/index.js";
+import type { StateStore } from "../modules/state/index.js";
 import { UuidIdGenerator, type IdGenerator } from "../infrastructure/index.js";
 import { SystemClock } from "../infrastructure/index.js";
 import type { AppConfig } from "./config.js";
@@ -25,8 +23,11 @@ export interface AppContainerOptions {
 
 export const createApplication = (options: AppContainerOptions = {}): DefaultApplication => {
   const config = options.config ?? readEnvironmentConfig();
-  const stateStore = options.stateStore ?? new InMemoryRunStore();
-  const eventSink = options.eventSink ?? new InMemoryEventStore();
+  if (!options.stateStore || !options.eventSink) {
+    throw new Error("正式基础设施未配置：需要 PostgreSQL StateStore 和 EventSink");
+  }
+  const stateStore = options.stateStore;
+  const eventSink = options.eventSink;
   const harness = options.harness ?? new DefaultHarness(config.execution);
   const runtime = options.runtime ?? new DefaultAgentRuntime(new DemoModelGateway(), harness);
   return new DefaultApplication(config, {

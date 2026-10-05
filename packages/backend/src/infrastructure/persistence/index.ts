@@ -1,7 +1,4 @@
-export { InMemoryEventStore } from "./in-memory-event-store.js";
-export { InMemoryRunStore } from "./in-memory-run-store.js";
-
 export interface PersistenceConnection {
-  readonly dialect: "memory" | "mysql" | "postgres";
+  readonly dialect: "postgres";
   connect(): Promise<void>;
 }

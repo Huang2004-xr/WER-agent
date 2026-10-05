@@ -1,4 +1,4 @@
-import type { RequestId, RunId, SessionId } from "@wer/shared";
+import type { RequestId, RunId, RuntimeEvent, SessionId } from "@wer/shared";
 import { DefaultHarness, type Harness } from "../harness/index.js";
 
 export type AgentModelResponse =
@@ -76,19 +76,23 @@ export class BasicAgentRuntime implements AgentRuntime {
         ...(input.signal ? { signal: input.signal } : {}),
       };
       await this.harness.beforeStep(context);
+      await this.harness.record({ runId: input.runId, requestId: context.requestId, sessionId: context.sessionId, type: "run.step.started", at: new Date().toISOString(), data: { step } } satisfies RuntimeEvent);
       const response = await this.model.respond({ message: input.message, step, messages, toolResult, ...(input.signal ? { signal: input.signal } : {}) });
       if (response.usage) await this.harness.consumeBudget({ runId: input.runId, ...response.usage });
       if (response.type === "final") {
         messages.push({ role: "assistant", content: response.text });
+        await this.harness.record({ runId: input.runId, requestId: context.requestId, sessionId: context.sessionId, type: "run.step.completed", at: new Date().toISOString(), data: { step } } satisfies RuntimeEvent);
         return { status: "completed", output: response.text, steps: step, checkpoint: { step, messages } };
       }
 
       const decision = await this.harness.authorizeTool({ ...context, toolName: response.toolName, sideEffect: response.sideEffect ?? false });
       if (decision.decision === "approval_required") {
+        await this.harness.record({ runId: input.runId, requestId: context.requestId, sessionId: context.sessionId, type: "approval.requested", at: new Date().toISOString(), data: { toolName: response.toolName, step } } satisfies RuntimeEvent);
         return { status: "waiting_approval", steps: step, checkpoint: { step, messages, pendingTool: { toolName: response.toolName, input: response.input } } };
       }
       if (!this.tools) throw new Error(`no executor registered for tool ${response.toolName}`);
       toolResult = await this.tools.execute(response.toolName, response.input, input.signal ? { signal: input.signal } : undefined);
+      await this.harness.record({ runId: input.runId, requestId: context.requestId, sessionId: context.sessionId, type: "tool.called", at: new Date().toISOString(), data: { toolName: response.toolName, step } } satisfies RuntimeEvent);
       messages.push({ role: "assistant", content: `调用工具：${response.toolName}` });
       messages.push({ role: "tool", content: stringifyToolResult(toolResult) });
     }

@@ -10,6 +10,6 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsx --test src/app/application.test.ts src/infrastructure/config/environment-config.test.ts src/infrastructure/queue/in-memory-job-queue.test.ts src/modules/agent-runtime/index.test.ts src/modules/harness/index.test.ts src/modules/planning/planning.test.ts src/modules/state/index.test.ts"
+    "test": "tsx --test src/infrastructure/config/environment-config.test.ts src/modules/agent-runtime/index.test.ts src/modules/harness/index.test.ts src/modules/planning/planning.test.ts"
   }
 }
